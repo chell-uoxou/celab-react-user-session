@@ -1,27 +1,27 @@
-"use client";
+// "use client";
 
-import { useState } from "react";
-import Counter from "../components/Counter";
+// import { useState } from "react";
+// import Counter from "../components/Counter";
 
-export default function Home() {
-  const [countState, setCountState] = useState(5);
-  const tem = "晴れ";
-  let count = 0;
+// export default function Home() {
+//   const [countState, setCountState] = useState(5);
+//   const tem = "晴れ";
+//   let count = 0;
 
-  const handleClickFuyasu = () => {
-    setCountState(countState + 1);
-  };
-  const handleClickHerasu = () => {
-    setCountState(countState - 1);
-  };
+//   const handleClickFuyasu = () => {
+//     setCountState(countState + 1);
+//   };
+//   const handleClickHerasu = () => {
+//     setCountState(countState - 1);
+//   };
 
 
-  return (
-    <div>
-      <h1>Hello</h1>
-      <p>今日の天気は{tem}</p>
-      <Counter step={2} label="うおお" />
-      <Counter defaultValue={0} />
-    </div>
-  );
-}
+//   return (
+//     <div>
+//       <h1>Hello</h1>
+//       <p>今日の天気は{tem}</p>
+//       <Counter step={2} label="うおお" />
+//       <Counter defaultValue={0} />
+//     </div>
+//   );
+// }
