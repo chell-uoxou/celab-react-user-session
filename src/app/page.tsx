@@ -20,11 +20,8 @@ export default function Home() {
     <div>
       <h1>Hello</h1>
       <p>今日の天気は{tem}</p>
-      <Counter />
-      <Counter />
-      <Counter />
-      <Counter />
-
+      <Counter step={2} label="うおお" />
+      <Counter defaultValue={0} />
     </div>
   );
 }
