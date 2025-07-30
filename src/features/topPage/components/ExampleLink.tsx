@@ -9,7 +9,7 @@ interface ExampleLinkProps {
 
 const ExampleLink = (props: ExampleLinkProps) => {
   return (
-    <div className="flex flex-col gap-2 my-10">
+    <div className="flex flex-col gap-2">
       <Link
         href={props.href}
         className="text-blue-500 hover:underline underline-offset-4"
