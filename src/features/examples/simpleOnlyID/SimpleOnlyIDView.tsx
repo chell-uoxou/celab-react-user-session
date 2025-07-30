@@ -1,10 +1,10 @@
 "use client";
 
-import { useAuth } from "@/hooks/useAuth";
+import { useExperimentUserSession } from "@/hooks/useExperimentUserSession";
 import React from "react";
 
 const SimpleOnlyIDView = () => {
-  const {} = useAuth();
+  const {} = useExperimentUserSession();
 
   return (
     <div className="flex flex-col p-8">

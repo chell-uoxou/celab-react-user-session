@@ -22,7 +22,7 @@ type User = {
 // 1000ms * 60秒 * 60分 ＝> 1時間
 const DEFAULT_SESSION_DURATION_MS = 1000 * 60;
 
-export const useAuth = (): AuthHook => {
+export const useExperimentUserSession = (): AuthHook => {
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
     const [user, setUser] = useState<Omit<User, "expiresAt"> | null>(null);
 

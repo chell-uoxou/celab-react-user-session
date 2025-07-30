@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
+import { useExperimentUserSession } from "@/hooks/useExperimentUserSession";
 
 const NameAndIDView = () => {
-  const { login, isLoggedIn, user, logout } = useAuth();
+  const { login, isLoggedIn, user, logout } = useExperimentUserSession();
   const [id, setId] = useState("");
   const [name, setName] = useState("");
   const [showConfirm, setShowConfirm] = useState(false);
