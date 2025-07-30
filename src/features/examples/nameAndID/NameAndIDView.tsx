@@ -4,7 +4,8 @@ import React, { useState } from "react";
 import { useExperimentUserSession } from "@/hooks/useExperimentUserSession";
 
 const NameAndIDView = () => {
-  const { login, isLoggedIn, user, logout } = useExperimentUserSession();
+  const { startSession, isSessionActive, user, endSession } =
+    useExperimentUserSession();
   const [id, setId] = useState("");
   const [name, setName] = useState("");
   const [showConfirm, setShowConfirm] = useState(false);
@@ -17,7 +18,7 @@ const NameAndIDView = () => {
   };
 
   const confirmLogin = () => {
-    login({ id, name });
+    startSession({ id, name });
     console.log(id, name);
     setShowConfirm(false);
   };
@@ -25,7 +26,7 @@ const NameAndIDView = () => {
   return (
     <div>
       {/* 必要でなければコメントアウト */}
-      {isLoggedIn ? (
+      {isSessionActive ? (
         <div className="flex items-center justify-center min-h-screen bg-gray-100">
           <div className="bg-white border border-gray-300 rounded p-6 w-full max-w-md shadow-md text-center">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">
@@ -36,7 +37,7 @@ const NameAndIDView = () => {
               {user?.name}
             </h2>
             <button
-              onClick={logout}
+              onClick={endSession}
               className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
             >
               ログアウト
