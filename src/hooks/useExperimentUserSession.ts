@@ -77,7 +77,15 @@ export const useExperimentUserSession = <
   // データ取得関数
   const getData = useCallback(
     (key: keyof T): T[keyof T] | undefined => {
-      return session?.data?.[key];
+      if (!session) {
+        console.error("Session is not active");
+        return undefined;
+      }
+      if (!session.data) {
+        console.error("No data available in session");
+        return undefined;
+      }
+      return session.data[key];
     },
     [session]
   );
