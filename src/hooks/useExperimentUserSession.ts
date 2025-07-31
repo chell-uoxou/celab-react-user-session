@@ -17,7 +17,7 @@ type ExperimentSessionHook<T = Record<string, unknown>> = {
 type ExperimentSession<T = Record<string, unknown>> = {
   userId: string;
   expiresAt: number; //期限（ミリ秒）
-  data?: T;
+  data: T;
 };
 
 // 1000ms * 60秒 * 60分 ＝> 1時間
@@ -28,6 +28,7 @@ export const useExperimentUserSession = <
 >(): ExperimentSessionHook<T> => {
   const [isSessionActive, setIsSessionActive] = useState<boolean>(false);
   const [session, setSession] = useState<ExperimentSession<T> | null>(null);
+  const userId = session !== null ? session.userId : null;
 
   // 初期化処理：localStorageから復元
   useEffect(() => {
@@ -54,7 +55,11 @@ export const useExperimentUserSession = <
       const expiresAt =
         Date.now() +
         (maxAgeSec ? maxAgeSec * 1000 : DEFAULT_SESSION_DURATION_MS);
-      const newSession: ExperimentSession<T> = { userId, data, expiresAt };
+      const newSession: ExperimentSession<T> = {
+        userId,
+        data: data ?? ({} as T),
+        expiresAt,
+      };
       localStorage.setItem("user", JSON.stringify(newSession));
       setSession(newSession);
       setIsSessionActive(true);
@@ -95,7 +100,7 @@ export const useExperimentUserSession = <
 
   return {
     isSessionActive,
-    userId: session?.userId || null,
+    userId,
     getData,
     setData,
     startSession,
