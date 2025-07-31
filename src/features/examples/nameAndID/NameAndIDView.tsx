@@ -3,9 +3,13 @@
 import React, { useState } from "react";
 import { useExperimentUserSession } from "@/hooks/useExperimentUserSession";
 
+type SessionData = {
+  name: string;
+};
+
 const NameAndIDView = () => {
-  const { startSession, isSessionActive, user, endSession } =
-    useExperimentUserSession();
+  const { startSession, isSessionActive, userId, endSession, getData } =
+    useExperimentUserSession<SessionData>();
   const [id, setId] = useState("");
   const [name, setName] = useState("");
   const [showConfirm, setShowConfirm] = useState(false);
@@ -18,7 +22,7 @@ const NameAndIDView = () => {
   };
 
   const confirmLogin = () => {
-    startSession({ id, name });
+    startSession(id, { data: { name }, maxAgeSec: 3600 });
     console.log(id, name);
     setShowConfirm(false);
   };
@@ -32,9 +36,9 @@ const NameAndIDView = () => {
             <h2 className="text-xl font-semibold text-gray-800 mb-4">
               以下でログイン中
               <br />
-              ID：{user?.id}
+              ID：{userId}
               <br />
-              {user?.name}
+              名前：{getData("name") || "未設定"}
             </h2>
             <button
               onClick={endSession}
@@ -73,7 +77,6 @@ const NameAndIDView = () => {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-500"
-                required
               />
             </div>
             <button
@@ -93,7 +96,7 @@ const NameAndIDView = () => {
                   <br />
                   ID: {id}
                   <br />
-                  名前：{name}
+                  名前：{name || "未設定"}
                 </p>
                 <div className="flex justify-center space-x-4">
                   <button
