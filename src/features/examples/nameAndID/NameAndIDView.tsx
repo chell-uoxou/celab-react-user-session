@@ -8,8 +8,14 @@ type SessionData = {
 };
 
 const NameAndIDView = () => {
-  const { startSession, isSessionActive, userId, endSession, getData } =
-    useExperimentUserSession<SessionData>();
+  const {
+    startSession,
+    isSessionActive,
+    userId,
+    endSession,
+    getData,
+    isSessionLoading,
+  } = useExperimentUserSession<SessionData>();
   const [id, setId] = useState("");
   const [name, setName] = useState("");
   const [showConfirm, setShowConfirm] = useState(false);
@@ -29,8 +35,7 @@ const NameAndIDView = () => {
 
   return (
     <div>
-      {/* 必要でなければコメントアウト */}
-      {isSessionActive ? (
+      {!isSessionLoading && isSessionActive ? (
         <div className="flex items-center justify-center min-h-screen bg-gray-100">
           <div className="bg-white border border-gray-300 rounded p-6 w-full max-w-md shadow-md text-center">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">
@@ -56,6 +61,10 @@ const NameAndIDView = () => {
               </button>
             </div>
           </div>
+        </div>
+      ) : isSessionLoading ? (
+        <div className="flex items-center justify-center min-h-screen bg-gray-100">
+          <div className="text-gray-600 text-lg">セッションを読み込み中...</div>
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
@@ -100,7 +109,7 @@ const NameAndIDView = () => {
               type="submit"
               className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition"
             >
-              ログイン
+              実験者セッションを開始
             </button>
           </form>
 

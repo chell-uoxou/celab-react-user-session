@@ -6,7 +6,8 @@ type StartOptions<T> = {
 };
 
 type ExperimentSessionHook<T = Record<string, unknown>> = {
-  isSessionActive: boolean;
+  isSessionActive: boolean | null;
+  isSessionLoading: boolean;
   userId: string | null;
   startSession: (userId: string, options: StartOptions<T>) => void;
   endSession: () => void;
@@ -27,7 +28,8 @@ const LOCALSTORAGE_KEY = "celab.experimentUserSession.v1";
 export const useExperimentUserSession = <
   T = Record<string, unknown>
 >(): ExperimentSessionHook<T> => {
-  const [isSessionActive, setIsSessionActive] = useState<boolean>(false);
+  const [isSessionActive, setIsSessionActive] = useState<boolean | null>(null);
+  const [isSessionLoading, setIsSessionLoading] = useState<boolean>(true);
   const [session, setSession] = useState<ExperimentSession<T> | null>(null);
   const userId = session !== null ? session.userId : null;
 
@@ -47,6 +49,7 @@ export const useExperimentUserSession = <
         setSession(null);
       }
     }
+    setIsSessionLoading(false);
   }, []);
 
   // ログイン処理
@@ -109,6 +112,7 @@ export const useExperimentUserSession = <
 
   return {
     isSessionActive,
+    isSessionLoading,
     userId,
     getData,
     setData,
