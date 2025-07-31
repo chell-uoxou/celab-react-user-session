@@ -22,6 +22,7 @@ type ExperimentSession<T = Record<string, unknown>> = {
 
 // 1000ms * 60秒 * 60分 ＝> 1時間
 const DEFAULT_SESSION_DURATION_MS = 1000 * 60;
+const LOCALSTORAGE_KEY = "celab.experimentUserSession.v1";
 
 export const useExperimentUserSession = <
   T = Record<string, unknown>
@@ -32,7 +33,7 @@ export const useExperimentUserSession = <
 
   // 初期化処理：localStorageから復元
   useEffect(() => {
-    const stored = localStorage.getItem("user");
+    const stored = localStorage.getItem(LOCALSTORAGE_KEY);
     if (stored) {
       const parsed: ExperimentSession<T> = JSON.parse(stored);
       const now = Date.now();
@@ -41,7 +42,7 @@ export const useExperimentUserSession = <
         setSession(parsed);
         setIsSessionActive(true);
       } else {
-        localStorage.removeItem("user");
+        localStorage.removeItem(LOCALSTORAGE_KEY);
         setIsSessionActive(false);
         setSession(null);
       }
@@ -60,7 +61,7 @@ export const useExperimentUserSession = <
         data: data ?? ({} as T),
         expiresAt,
       };
-      localStorage.setItem("user", JSON.stringify(newSession));
+      localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(newSession));
       setSession(newSession);
       setIsSessionActive(true);
     },
@@ -69,7 +70,7 @@ export const useExperimentUserSession = <
 
   // ログアウト処理
   const endSession = useCallback(() => {
-    localStorage.removeItem("user");
+    localStorage.removeItem(LOCALSTORAGE_KEY);
     setSession(null);
     setIsSessionActive(false);
   }, []);
@@ -101,7 +102,7 @@ export const useExperimentUserSession = <
         ...session,
         data: updatedData,
       };
-      localStorage.setItem("user", JSON.stringify(updatedSession));
+      localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(updatedSession));
       setSession(updatedSession);
     }
   };
