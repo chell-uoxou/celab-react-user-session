@@ -6,6 +6,16 @@ type StartOptions<T> = {
 };
 
 type UserSessionHook<T = Record<string, unknown>> = {
+  /**
+   * ## 被験者セッションが有効かどうか
+   * ブラウザに有効な被験者セッションが存在するかどうかを示します。
+   * 有効なセッションが見つかった場合はuserIdが設定され、無効な場合はnullになります。
+   *
+   * ### 取る値
+   * - `true`: セッションが有効
+   * - `false`: セッションが無効
+   * - `null`: セッション情報が未読み込み
+   */
   isSessionActive: boolean | null;
 
   /**
