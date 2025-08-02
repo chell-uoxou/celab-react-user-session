@@ -249,7 +249,10 @@ export const useUserSession = <
     (oldSession: UserSession<T>, seconds?: number) => {
       const durationMs =
         seconds !== undefined ? seconds * 1000 : DEFAULT_SESSION_DURATION_MS;
-      const newExpiresAt = Date.now() + durationMs;
+      const baseExpiresAt = Date.now() + durationMs;
+
+      // もともとのセッションの有効期限と比較して、より長い方を選択
+      const newExpiresAt = Math.max(oldSession.expiresAt, baseExpiresAt);
       const updatedSession: UserSession<T> = {
         ...oldSession,
         expiresAt: newExpiresAt,
