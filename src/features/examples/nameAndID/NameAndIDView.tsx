@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useUserSession } from "@/hooks/useUserSession";
+import { useUserSession } from "@/hook";
 
 type SessionData = {
   name: string;
