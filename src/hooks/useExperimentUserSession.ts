@@ -56,8 +56,8 @@ export const useExperimentUserSession = <
 
   // ログイン処理
   const startSession = useCallback(
-    (userId: string, options: StartOptions<T>) => {
-      const { data, maxAgeSec } = options;
+    (userId: string, options?: StartOptions<T>) => {
+      const { data, maxAgeSec } = options || {};
       const expiresAt =
         Date.now() +
         (maxAgeSec ? maxAgeSec * 1000 : DEFAULT_SESSION_DURATION_MS);
