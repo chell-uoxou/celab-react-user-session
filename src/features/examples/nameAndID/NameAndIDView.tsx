@@ -1,11 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { useUserSession } from "@/hooks/useUserSession";
-
-type SessionData = {
-  name: string;
-};
+import { useUserSession } from "@/hook";
+import { SessionData } from "./types";
+import NameEditor from "./NameEditor";
 
 const NameAndIDView = () => {
   const {
@@ -37,16 +35,16 @@ const NameAndIDView = () => {
     <div>
       {!isSessionLoading && isSessionActive ? (
         <div className="flex items-center justify-center min-h-screen bg-gray-100">
-          <div className="bg-white border border-gray-300 rounded p-6 w-full max-w-md shadow-md text-center">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          <div className="bg-white  border-gray-300 rounded p-6 w-full max-w-md shadow-md text-start flex flex-col gap-4">
+            <h2 className="text-xl font-semibold text-gray-800">
               実験者セッションが有効です
             </h2>
-            <p className="text-start mb-4 w-fit mx-auto font-mono">
+            <p className="text-start w-fit font-mono">
               ID: {userId}
               <br />
               氏名: {getData("name") || "未設定"}
             </p>
-            <div className="flex flex-col items-center gap-2">
+            <div className="flex gap-2">
               <button
                 onClick={endSession}
                 className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition w-fit"
@@ -60,6 +58,7 @@ const NameAndIDView = () => {
                 アプリを再読み込み
               </button>
             </div>
+            <NameEditor />
           </div>
         </div>
       ) : isSessionLoading ? (
