@@ -6,7 +6,7 @@ const LoginPage = () => {
   return (
     <div className="flex flex-col gap-16 mx-auto max-w-2xl my-10 px-10">
       <h1 className="text-3xl font-bold font-mono break-all">
-        useExperimentUserSession()のデモ集
+        useUserSession()のデモ集
       </h1>
       <div className="flex flex-col gap-8">
         <ExampleLink
@@ -17,7 +17,7 @@ const LoginPage = () => {
         <ExampleLink
           href="/examples/simple_only_id"
           title="IDのみでログインする、ログイン画面の例"
-          description="useExperimentUserSession()を使って、IDのみでログインする例です。"
+          description="useUserSession()を使って、IDのみでログインする例です。"
         />
       </div>
     </div>
