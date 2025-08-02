@@ -97,7 +97,8 @@ export const useExperimentUserSession = <
   );
 
   // データ設定関数
-  const setData = (key: keyof T, value: T[keyof T]) => {
+  const setData = useCallback(
+(key: keyof T, value: T[keyof T]) => {
     if (session) {
       const updatedData: T = {
         ...session.data,
@@ -110,7 +111,9 @@ export const useExperimentUserSession = <
       localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(updatedSession));
       setSession(updatedSession);
     }
-  };
+  },
+    [session]
+  );
 
   return {
     isSessionActive,
