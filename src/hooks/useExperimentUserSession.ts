@@ -29,8 +29,9 @@ export const useExperimentUserSession = <
   T = Record<string, unknown>
 >(): ExperimentSessionHook<T> => {
   const [isSessionActive, setIsSessionActive] = useState<boolean | null>(null);
-  const [isSessionLoading, setIsSessionLoading] = useState<boolean>(true);
-  const [session, setSession] = useState<ExperimentSession<T> | null>(null);
+    const [session, setSession] = useState<ExperimentSession<T> | null>(null);
+
+  const isSessionLoading = isSessionActive === null;
   const userId = session !== null ? session.userId : null;
 
   // 初期化処理：localStorageから復元
@@ -48,9 +49,11 @@ export const useExperimentUserSession = <
         setIsSessionActive(false);
         setSession(null);
       }
+} else {
+      setIsSessionActive(false);
+      setSession(null);
     }
-    setIsSessionLoading(false);
-  }, []);
+      }, []);
 
   // ログイン処理
   const startSession = useCallback(
