@@ -116,7 +116,7 @@ type UserSession<T> = {
 const DEFAULT_SESSION_DURATION_MS = 1000 * 60 * 60 * 24 * 7; // 7日間
 const LOCALSTORAGE_KEY = "celab.userSession.v1";
 
-function isValidAsUserSession<T>(value: unknown): value is UserSession<T> {
+function isValidUserSession<T>(value: unknown): value is UserSession<T> {
   if (typeof value !== "object" || value === null) return false;
   const candidate = value as Partial<UserSession<unknown>>;
 
@@ -187,7 +187,7 @@ export const useUserSession = <
 
       const now = Date.now();
 
-      if (!isValidAsUserSession<T>(parsed)) {
+      if (!isValidUserSession<T>(parsed)) {
         console.error("Invalid session data format in localStorage, removing.");
         localStorage.removeItem(LOCALSTORAGE_KEY);
         setIsSessionActive(false);
