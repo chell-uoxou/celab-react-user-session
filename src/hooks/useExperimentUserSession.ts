@@ -21,8 +21,7 @@ type ExperimentSession<T = Record<string, unknown>> = {
   data: T;
 };
 
-// 1000ms * 60秒 * 60分 ＝> 1時間
-const DEFAULT_SESSION_DURATION_MS = 1000 * 60;
+const DEFAULT_SESSION_DURATION_MS = 1000 * 60 * 60 * 24 * 7; // 7日間
 const LOCALSTORAGE_KEY = "celab.experimentUserSession.v1";
 
 export const useExperimentUserSession = <
