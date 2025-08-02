@@ -246,12 +246,12 @@ export const useUserSession = <
   const userId = session !== null ? session.userId : null;
 
   const _touchSession = useCallback(
-    (session: UserSession<T>, seconds?: number) => {
+    (oldSession: UserSession<T>, seconds?: number) => {
       const durationMs =
         seconds !== undefined ? seconds * 1000 : DEFAULT_SESSION_DURATION_MS;
       const newExpiresAt = Date.now() + durationMs;
       const updatedSession: UserSession<T> = {
-        ...session,
+        ...oldSession,
         expiresAt: newExpiresAt,
       };
 
@@ -276,10 +276,10 @@ export const useUserSession = <
 
   // localStorageから復元
   useEffect(() => {
-    const session = getSessionFromLocalStorage<T>();
-    if (session) {
+    const parsedSession = getSessionFromLocalStorage<T>();
+    if (parsedSession) {
       // マウント時にセッションが存在する場合は有効期限を更新
-      const updatedSession = _touchSession(session);
+      const updatedSession = _touchSession(parsedSession);
       setIsSessionActive(true);
       setSession(updatedSession);
     } else {
