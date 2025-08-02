@@ -31,7 +31,7 @@ type UserSessionHook<T = Record<string, unknown>> = {
 
   /**
    * ## 被験者セッションのユーザーID
-   * startSession()時に設定された、現在有効な被験者セッションのユーザーIDです。
+   * `startSession()`時に設定された、現在有効な被験者セッションのユーザーIDです。
    *
    * ### 取る値の型
    * - `null`: セッションがアクティブでない場合
