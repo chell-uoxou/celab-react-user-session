@@ -105,6 +105,19 @@ type UserSessionHook<T> = {
    * ```
    */
   setData: (key: keyof T, value: T[keyof T]) => void;
+
+  /**
+   * ## 被験者セッションの有効期限を更新する
+   * セッションの有効期限を延長します。
+   * デフォルトでは7日間ですが、引数で秒数を指定できます。
+   *
+   * ### 例
+   * ```typescript
+   * touchSession(); // デフォルトの7日間延長
+   * touchSession(3600); // 1時間延長
+   * ```
+   */
+  touchSession: (seconds?: number) => void;
 };
 
 type UserSession<T> = {
@@ -232,17 +245,48 @@ export const useUserSession = <
   const isSessionLoading = isSessionActive === null;
   const userId = session !== null ? session.userId : null;
 
+  const _touchSession = useCallback(
+    (session: UserSession<T>, seconds?: number) => {
+      const durationMs =
+        seconds !== undefined ? seconds * 1000 : DEFAULT_SESSION_DURATION_MS;
+      const newExpiresAt = Date.now() + durationMs;
+      const updatedSession: UserSession<T> = {
+        ...session,
+        expiresAt: newExpiresAt,
+      };
+
+      safeLocalStorageSet(LOCALSTORAGE_KEY, JSON.stringify(updatedSession));
+      return updatedSession;
+    },
+    []
+  );
+
+  const touchSession = useCallback(
+    (seconds?: number) => {
+      if (!session) {
+        console.warn("No active session to touch.");
+        return;
+      }
+      const updatedSession = _touchSession(session, seconds);
+      setSession(updatedSession);
+      setIsSessionActive(true);
+    },
+    [_touchSession, session]
+  );
+
   // localStorageから復元
   useEffect(() => {
     const session = getSessionFromLocalStorage<T>();
     if (session) {
+      // マウント時にセッションが存在する場合は有効期限を更新
+      const updatedSession = _touchSession(session);
       setIsSessionActive(true);
-      setSession(session);
+      setSession(updatedSession);
     } else {
       setSession(null);
       setIsSessionActive(false);
     }
-  }, []);
+  }, [_touchSession]);
 
   // ログイン処理
   const startSession = useCallback(
@@ -316,5 +360,6 @@ export const useUserSession = <
     setData,
     startSession,
     endSession,
+    touchSession,
   };
 };
