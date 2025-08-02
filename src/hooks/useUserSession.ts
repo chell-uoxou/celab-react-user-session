@@ -5,11 +5,10 @@ type StartOptions<T> = {
   data?: T;
 };
 
-type UserSessionHook<T = Record<string, unknown>> = {
+type UserSessionHook<T> = {
   /**
    * ## 被験者セッションが有効かどうか
    * ブラウザに有効な被験者セッションが存在するかどうかを示します。
-   * 有効なセッションが見つかった場合はuserIdが設定され、無効な場合はnullになります。
    *
    * ### 取る値
    * - `true`: セッションが有効
@@ -76,7 +75,7 @@ type UserSessionHook<T = Record<string, unknown>> = {
    * - `"b4_tanaka_taro"` （氏名と学年の組み合わせ）
    * - `"test002"` （テストユーザー）
    */
-  startSession: (userId: string, options: StartOptions<T>) => void;
+  startSession: (userId: string, options?: StartOptions<T>) => void;
 
   /**
    * ## 被験者セッションの終了
@@ -108,7 +107,7 @@ type UserSessionHook<T = Record<string, unknown>> = {
   setData: (key: keyof T, value: T[keyof T]) => void;
 };
 
-type UserSession<T = Record<string, unknown>> = {
+type UserSession<T> = {
   userId: string;
   expiresAt: number; //期限（ミリ秒）
   data: T;
@@ -116,6 +115,18 @@ type UserSession<T = Record<string, unknown>> = {
 
 const DEFAULT_SESSION_DURATION_MS = 1000 * 60 * 60 * 24 * 7; // 7日間
 const LOCALSTORAGE_KEY = "celab.userSession.v1";
+
+function isValidAsUserSession<T>(value: unknown): value is UserSession<T> {
+  if (typeof value !== "object" || value === null) return false;
+  const candidate = value as Partial<UserSession<unknown>>;
+
+  return (
+    typeof candidate.userId === "string" &&
+    typeof candidate.expiresAt === "number" &&
+    typeof candidate.data === "object" &&
+    candidate.data !== null
+  );
+}
 
 /**
  * ## 被験者セッションフック
@@ -134,7 +145,7 @@ const LOCALSTORAGE_KEY = "celab.userSession.v1";
  * };
  *
  * // フック使用時に型引数を指定できます
- * const { isSessionLoading, startSession, getData, userId } = useUserSession<SessionData>();
+ * const { isSessionLoading, isSessionActive, startSession, getData, userId } = useUserSession<SessionData>();
  *
  * // 認証成功時などに、セッションを開始
  * // ユーザーIDとしてRainbowユーザーIDを使用し、追加データとして氏名を保存
@@ -160,7 +171,7 @@ const LOCALSTORAGE_KEY = "celab.userSession.v1";
  * }
  */
 export const useUserSession = <
-  T = Record<string, unknown>
+  T extends object = Record<string, unknown>
 >(): UserSessionHook<T> => {
   const [isSessionActive, setIsSessionActive] = useState<boolean | null>(null);
   const [session, setSession] = useState<UserSession<T> | null>(null);
@@ -168,12 +179,21 @@ export const useUserSession = <
   const isSessionLoading = isSessionActive === null;
   const userId = session !== null ? session.userId : null;
 
-  // 初期化処理：localStorageから復元
+  // localStorageから復元
   useEffect(() => {
     const stored = localStorage.getItem(LOCALSTORAGE_KEY);
     if (stored) {
-      const parsed: UserSession<T> = JSON.parse(stored);
+      const parsed = JSON.parse(stored);
+
       const now = Date.now();
+
+      if (!isValidAsUserSession<T>(parsed)) {
+        console.error("Invalid session data format in localStorage, removing.");
+        localStorage.removeItem(LOCALSTORAGE_KEY);
+        setIsSessionActive(false);
+        setSession(null);
+        return;
+      }
 
       if (now < parsed.expiresAt) {
         setSession(parsed);
