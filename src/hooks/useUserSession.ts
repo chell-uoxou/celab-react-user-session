@@ -5,11 +5,10 @@ type StartOptions<T> = {
   data?: T;
 };
 
-type UserSessionHook<T = Record<string, unknown>> = {
+type UserSessionHook<T> = {
   /**
    * ## 被験者セッションが有効かどうか
    * ブラウザに有効な被験者セッションが存在するかどうかを示します。
-   * 有効なセッションが見つかった場合はuserIdが設定され、無効な場合はnullになります。
    *
    * ### 取る値
    * - `true`: セッションが有効
@@ -76,7 +75,7 @@ type UserSessionHook<T = Record<string, unknown>> = {
    * - `"b4_tanaka_taro"` （氏名と学年の組み合わせ）
    * - `"test002"` （テストユーザー）
    */
-  startSession: (userId: string, options: StartOptions<T>) => void;
+  startSession: (userId: string, options?: StartOptions<T>) => void;
 
   /**
    * ## 被験者セッションの終了
@@ -108,7 +107,7 @@ type UserSessionHook<T = Record<string, unknown>> = {
   setData: (key: keyof T, value: T[keyof T]) => void;
 };
 
-type UserSession<T = Record<string, unknown>> = {
+type UserSession<T> = {
   userId: string;
   expiresAt: number; //期限（ミリ秒）
   data: T;
@@ -116,6 +115,44 @@ type UserSession<T = Record<string, unknown>> = {
 
 const DEFAULT_SESSION_DURATION_MS = 1000 * 60 * 60 * 24 * 7; // 7日間
 const LOCALSTORAGE_KEY = "celab.userSession.v1";
+
+function isValidUserSession<T>(value: unknown): value is UserSession<T> {
+  if (typeof value !== "object" || value === null) return false;
+  const candidate = value as Partial<UserSession<unknown>>;
+
+  return (
+    typeof candidate.userId === "string" &&
+    typeof candidate.expiresAt === "number" &&
+    typeof candidate.data === "object" &&
+    candidate.data !== null
+  );
+}
+
+// localStorage操作を安全にラップするヘルパー
+function safeLocalStorageGet(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch (e) {
+    console.warn("Failed to access localStorage.getItem", e);
+    return null;
+  }
+}
+
+function safeLocalStorageSet(key: string, value: string): void {
+  try {
+    localStorage.setItem(key, value);
+  } catch (e) {
+    console.warn("Failed to access localStorage.setItem", e);
+  }
+}
+
+function safeLocalStorageRemove(key: string): void {
+  try {
+    localStorage.removeItem(key);
+  } catch (e) {
+    console.warn("Failed to access localStorage.removeItem", e);
+  }
+}
 
 /**
  * ## 被験者セッションフック
@@ -134,7 +171,7 @@ const LOCALSTORAGE_KEY = "celab.userSession.v1";
  * };
  *
  * // フック使用時に型引数を指定できます
- * const { isSessionLoading, startSession, getData, userId } = useUserSession<SessionData>();
+ * const { isSessionLoading, isSessionActive, startSession, getData, userId } = useUserSession<SessionData>();
  *
  * // 認証成功時などに、セッションを開始
  * // ユーザーIDとしてRainbowユーザーIDを使用し、追加データとして氏名を保存
@@ -160,7 +197,7 @@ const LOCALSTORAGE_KEY = "celab.userSession.v1";
  * }
  */
 export const useUserSession = <
-  T = Record<string, unknown>
+  T extends object = Record<string, unknown>
 >(): UserSessionHook<T> => {
   const [isSessionActive, setIsSessionActive] = useState<boolean | null>(null);
   const [session, setSession] = useState<UserSession<T> | null>(null);
@@ -168,18 +205,36 @@ export const useUserSession = <
   const isSessionLoading = isSessionActive === null;
   const userId = session !== null ? session.userId : null;
 
-  // 初期化処理：localStorageから復元
+  // localStorageから復元
   useEffect(() => {
-    const stored = localStorage.getItem(LOCALSTORAGE_KEY);
+    const stored = safeLocalStorageGet(LOCALSTORAGE_KEY);
     if (stored) {
-      const parsed: UserSession<T> = JSON.parse(stored);
-      const now = Date.now();
+      let parsed: unknown;
 
+      try {
+        parsed = JSON.parse(stored);
+      } catch (error) {
+        console.error("Failed to parse session data from localStorage:", error);
+        safeLocalStorageRemove(LOCALSTORAGE_KEY);
+        setIsSessionActive(false);
+        setSession(null);
+        return;
+      }
+
+      if (!isValidUserSession<T>(parsed)) {
+        console.error("Invalid session data format in localStorage, removing.");
+        safeLocalStorageRemove(LOCALSTORAGE_KEY);
+        setIsSessionActive(false);
+        setSession(null);
+        return;
+      }
+
+      const now = Date.now();
       if (now < parsed.expiresAt) {
         setSession(parsed);
         setIsSessionActive(true);
       } else {
-        localStorage.removeItem(LOCALSTORAGE_KEY);
+        safeLocalStorageRemove(LOCALSTORAGE_KEY);
         setIsSessionActive(false);
         setSession(null);
       }
@@ -201,7 +256,7 @@ export const useUserSession = <
         data: data ?? ({} as T),
         expiresAt,
       };
-      localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(newSession));
+      safeLocalStorageSet(LOCALSTORAGE_KEY, JSON.stringify(newSession));
       setSession(newSession);
       setIsSessionActive(true);
     },
@@ -210,7 +265,7 @@ export const useUserSession = <
 
   // ログアウト処理
   const endSession = useCallback(() => {
-    localStorage.removeItem(LOCALSTORAGE_KEY);
+    safeLocalStorageRemove(LOCALSTORAGE_KEY);
     setSession(null);
     setIsSessionActive(false);
   }, []);
@@ -243,7 +298,7 @@ export const useUserSession = <
           ...session,
           data: updatedData,
         };
-        localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(updatedSession));
+        safeLocalStorageSet(LOCALSTORAGE_KEY, JSON.stringify(updatedSession));
         setSession(updatedSession);
       }
     },
