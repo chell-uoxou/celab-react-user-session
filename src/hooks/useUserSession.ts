@@ -105,6 +105,20 @@ type UserSessionHook<T> = {
    * ```
    */
   setData: (key: keyof T, value: T[keyof T]) => void;
+
+  /**
+   * ## 被験者セッションの有効期限を更新する
+   * セッションの有効期限を延長します。
+   * デフォルトでは7日間ですが、引数で秒数を指定できます。
+   * 更新の結果、原稿の有効期限より短くなる場合は、元の有効期限を保持します。
+   *
+   * ### 例
+   * ```typescript
+   * touchSession(); // デフォルトの7日間延長
+   * touchSession(3600); // 1時間延長
+   * ```
+   */
+  touchSession: (seconds?: number) => void;
 };
 
 type UserSession<T> = {
@@ -151,6 +165,33 @@ function safeLocalStorageRemove(key: string): void {
     localStorage.removeItem(key);
   } catch (e) {
     console.warn("Failed to access localStorage.removeItem", e);
+  }
+}
+
+function getSessionFromLocalStorage<T>(): UserSession<T> | null {
+  const stored = safeLocalStorageGet(LOCALSTORAGE_KEY);
+  if (!stored) return null;
+
+  try {
+    const parsed = JSON.parse(stored);
+    if (isValidUserSession<T>(parsed)) {
+      // 有効期限のチェック
+      if (parsed.expiresAt > Date.now()) {
+        return parsed;
+      } else {
+        // セッションが期限切れの場合は削除
+        safeLocalStorageRemove(LOCALSTORAGE_KEY);
+        return null;
+      }
+    } else {
+      console.error("Invalid session data format in localStorage, removing.");
+      safeLocalStorageRemove(LOCALSTORAGE_KEY);
+      return null;
+    }
+  } catch (error) {
+    console.error("Failed to parse session data from localStorage:", error);
+    safeLocalStorageRemove(LOCALSTORAGE_KEY);
+    return null;
   }
 }
 
@@ -205,57 +246,69 @@ export const useUserSession = <
   const isSessionLoading = isSessionActive === null;
   const userId = session !== null ? session.userId : null;
 
+  const _touchSession = useCallback(
+    (oldSession: UserSession<T>, seconds?: number) => {
+      const durationMs =
+        seconds !== undefined ? seconds * 1000 : DEFAULT_SESSION_DURATION_MS;
+      const baseExpiresAt = Date.now() + durationMs;
+
+      // もともとのセッションの有効期限と比較して、より長い方を選択
+      const newExpiresAt = Math.max(oldSession.expiresAt, baseExpiresAt);
+      const updatedSession: UserSession<T> = {
+        ...oldSession,
+        expiresAt: newExpiresAt,
+      };
+
+      safeLocalStorageSet(LOCALSTORAGE_KEY, JSON.stringify(updatedSession));
+      return updatedSession;
+    },
+    []
+  );
+
+  const touchSession = useCallback(
+    (seconds?: number) => {
+      if (!session) {
+        console.warn("No active session to touch.");
+        return;
+      }
+      const updatedSession = _touchSession(session, seconds);
+      setSession(updatedSession);
+      setIsSessionActive(true);
+    },
+    [_touchSession, session]
+  );
+
   // localStorageから復元
   useEffect(() => {
-    const stored = safeLocalStorageGet(LOCALSTORAGE_KEY);
-    if (stored) {
-      let parsed: unknown;
-
-      try {
-        parsed = JSON.parse(stored);
-      } catch (error) {
-        console.error("Failed to parse session data from localStorage:", error);
-        safeLocalStorageRemove(LOCALSTORAGE_KEY);
-        setIsSessionActive(false);
-        setSession(null);
-        return;
-      }
-
-      if (!isValidUserSession<T>(parsed)) {
-        console.error("Invalid session data format in localStorage, removing.");
-        safeLocalStorageRemove(LOCALSTORAGE_KEY);
-        setIsSessionActive(false);
-        setSession(null);
-        return;
-      }
-
-      const now = Date.now();
-      if (now < parsed.expiresAt) {
-        setSession(parsed);
-        setIsSessionActive(true);
-      } else {
-        safeLocalStorageRemove(LOCALSTORAGE_KEY);
-        setIsSessionActive(false);
-        setSession(null);
-      }
+    const parsedSession = getSessionFromLocalStorage<T>();
+    if (parsedSession) {
+      // マウント時にセッションが存在する場合は有効期限を更新
+      const updatedSession = _touchSession(parsedSession);
+      setIsSessionActive(true);
+      setSession(updatedSession);
     } else {
-      setIsSessionActive(false);
       setSession(null);
+      setIsSessionActive(false);
     }
-  }, []);
+  }, [_touchSession]);
 
   // ログイン処理
   const startSession = useCallback(
     (userId: string, options?: StartOptions<T>) => {
       const { data, maxAgeSec } = options || {};
+
       const expiresAt =
         Date.now() +
-        (maxAgeSec ? maxAgeSec * 1000 : DEFAULT_SESSION_DURATION_MS);
+        (maxAgeSec !== undefined
+          ? maxAgeSec * 1000
+          : DEFAULT_SESSION_DURATION_MS);
+
       const newSession: UserSession<T> = {
         userId,
         data: data ?? ({} as T),
         expiresAt,
       };
+
       safeLocalStorageSet(LOCALSTORAGE_KEY, JSON.stringify(newSession));
       setSession(newSession);
       setIsSessionActive(true);
@@ -274,11 +327,9 @@ export const useUserSession = <
   const getData = useCallback(
     (key: keyof T): T[keyof T] | undefined => {
       if (!session) {
-        console.error("Session is not active");
         return undefined;
       }
       if (!session.data) {
-        console.error("No data available in session");
         return undefined;
       }
       return session.data[key];
@@ -313,5 +364,6 @@ export const useUserSession = <
     setData,
     startSession,
     endSession,
+    touchSession,
   };
 };
