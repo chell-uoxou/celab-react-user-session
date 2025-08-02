@@ -128,6 +128,32 @@ function isValidUserSession<T>(value: unknown): value is UserSession<T> {
   );
 }
 
+// localStorage操作を安全にラップするヘルパー
+function safeLocalStorageGet(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch (e) {
+    console.warn("Failed to access localStorage.getItem", e);
+    return null;
+  }
+}
+
+function safeLocalStorageSet(key: string, value: string): void {
+  try {
+    localStorage.setItem(key, value);
+  } catch (e) {
+    console.warn("Failed to access localStorage.setItem", e);
+  }
+}
+
+function safeLocalStorageRemove(key: string): void {
+  try {
+    localStorage.removeItem(key);
+  } catch (e) {
+    console.warn("Failed to access localStorage.removeItem", e);
+  }
+}
+
 /**
  * ## 被験者セッションフック
  * このフックは、ブラウザのlocalStorageを使用して被験者セッションを管理します。
@@ -181,25 +207,34 @@ export const useUserSession = <
 
   // localStorageから復元
   useEffect(() => {
-    const stored = localStorage.getItem(LOCALSTORAGE_KEY);
+    const stored = safeLocalStorageGet(LOCALSTORAGE_KEY);
     if (stored) {
-      const parsed = JSON.parse(stored);
+      let parsed: unknown;
 
-      const now = Date.now();
-
-      if (!isValidUserSession<T>(parsed)) {
-        console.error("Invalid session data format in localStorage, removing.");
-        localStorage.removeItem(LOCALSTORAGE_KEY);
+      try {
+        parsed = JSON.parse(stored);
+      } catch (error) {
+        console.error("Failed to parse session data from localStorage:", error);
+        safeLocalStorageRemove(LOCALSTORAGE_KEY);
         setIsSessionActive(false);
         setSession(null);
         return;
       }
 
+      if (!isValidUserSession<T>(parsed)) {
+        console.error("Invalid session data format in localStorage, removing.");
+        safeLocalStorageRemove(LOCALSTORAGE_KEY);
+        setIsSessionActive(false);
+        setSession(null);
+        return;
+      }
+
+      const now = Date.now();
       if (now < parsed.expiresAt) {
         setSession(parsed);
         setIsSessionActive(true);
       } else {
-        localStorage.removeItem(LOCALSTORAGE_KEY);
+        safeLocalStorageRemove(LOCALSTORAGE_KEY);
         setIsSessionActive(false);
         setSession(null);
       }
@@ -221,7 +256,7 @@ export const useUserSession = <
         data: data ?? ({} as T),
         expiresAt,
       };
-      localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(newSession));
+      safeLocalStorageSet(LOCALSTORAGE_KEY, JSON.stringify(newSession));
       setSession(newSession);
       setIsSessionActive(true);
     },
@@ -230,7 +265,7 @@ export const useUserSession = <
 
   // ログアウト処理
   const endSession = useCallback(() => {
-    localStorage.removeItem(LOCALSTORAGE_KEY);
+    safeLocalStorageRemove(LOCALSTORAGE_KEY);
     setSession(null);
     setIsSessionActive(false);
   }, []);
@@ -263,7 +298,7 @@ export const useUserSession = <
           ...session,
           data: updatedData,
         };
-        localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(updatedSession));
+        safeLocalStorageSet(LOCALSTORAGE_KEY, JSON.stringify(updatedSession));
         setSession(updatedSession);
       }
     },
