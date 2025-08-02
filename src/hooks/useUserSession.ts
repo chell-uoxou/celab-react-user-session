@@ -154,7 +154,7 @@ function safeLocalStorageRemove(key: string): void {
   }
 }
 
-function safeParseLocalStorage<T>(): UserSession<T> | null {
+function getSessionFromLocalStorage<T>(): UserSession<T> | null {
   const stored = safeLocalStorageGet(LOCALSTORAGE_KEY);
   if (!stored) return null;
 
@@ -234,10 +234,10 @@ export const useUserSession = <
 
   // localStorageから復元
   useEffect(() => {
-    const parsedSession = safeParseLocalStorage<T>();
-    if (parsedSession) {
+    const session = getSessionFromLocalStorage<T>();
+    if (session) {
       setIsSessionActive(true);
-      setSession(parsedSession);
+      setSession(session);
     } else {
       setSession(null);
       setIsSessionActive(false);
