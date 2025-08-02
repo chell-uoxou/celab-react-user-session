@@ -5,7 +5,7 @@ type StartOptions<T> = {
   data?: T;
 };
 
-type ExperimentSessionHook<T = Record<string, unknown>> = {
+type UserSessionHook<T = Record<string, unknown>> = {
   isSessionActive: boolean | null;
 
   /**
@@ -98,14 +98,14 @@ type ExperimentSessionHook<T = Record<string, unknown>> = {
   setData: (key: keyof T, value: T[keyof T]) => void;
 };
 
-type ExperimentSession<T = Record<string, unknown>> = {
+type UserSession<T = Record<string, unknown>> = {
   userId: string;
   expiresAt: number; //期限（ミリ秒）
   data: T;
 };
 
 const DEFAULT_SESSION_DURATION_MS = 1000 * 60 * 60 * 24 * 7; // 7日間
-const LOCALSTORAGE_KEY = "celab.experimentUserSession.v1";
+const LOCALSTORAGE_KEY = "celab.userSession.v1";
 
 /**
  * ## 被験者セッションフック
@@ -113,7 +113,7 @@ const LOCALSTORAGE_KEY = "celab.experimentUserSession.v1";
  * セッションの開始、終了、追加データの取得・設定を行うことができます。
  * 追加データの型は、フック使用時に型引数で指定できます。
  *
- * @returns ExperimentSessionHook<T>
+ * @returns UserSessionHook<T>
  *
  * @example
  * ```tsx
@@ -149,11 +149,11 @@ const LOCALSTORAGE_KEY = "celab.experimentUserSession.v1";
  *   );
  * }
  */
-export const useExperimentUserSession = <
+export const useUserSession = <
   T = Record<string, unknown>
->(): ExperimentSessionHook<T> => {
+>(): UserSessionHook<T> => {
   const [isSessionActive, setIsSessionActive] = useState<boolean | null>(null);
-    const [session, setSession] = useState<ExperimentSession<T> | null>(null);
+  const [session, setSession] = useState<UserSession<T> | null>(null);
 
   const isSessionLoading = isSessionActive === null;
   const userId = session !== null ? session.userId : null;
@@ -162,7 +162,7 @@ export const useExperimentUserSession = <
   useEffect(() => {
     const stored = localStorage.getItem(LOCALSTORAGE_KEY);
     if (stored) {
-      const parsed: ExperimentSession<T> = JSON.parse(stored);
+      const parsed: UserSession<T> = JSON.parse(stored);
       const now = Date.now();
 
       if (now < parsed.expiresAt) {
@@ -173,11 +173,11 @@ export const useExperimentUserSession = <
         setIsSessionActive(false);
         setSession(null);
       }
-} else {
+    } else {
       setIsSessionActive(false);
       setSession(null);
     }
-      }, []);
+  }, []);
 
   // ログイン処理
   const startSession = useCallback(
@@ -186,7 +186,7 @@ export const useExperimentUserSession = <
       const expiresAt =
         Date.now() +
         (maxAgeSec ? maxAgeSec * 1000 : DEFAULT_SESSION_DURATION_MS);
-      const newSession: ExperimentSession<T> = {
+      const newSession: UserSession<T> = {
         userId,
         data: data ?? ({} as T),
         expiresAt,
@@ -223,20 +223,20 @@ export const useExperimentUserSession = <
 
   // データ設定関数
   const setData = useCallback(
-(key: keyof T, value: T[keyof T]) => {
-    if (session) {
-      const updatedData: T = {
-        ...session.data,
-        [key]: value,
-      } as T;
-      const updatedSession: ExperimentSession<T> = {
-        ...session,
-        data: updatedData,
-      };
-      localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(updatedSession));
-      setSession(updatedSession);
-    }
-  },
+    (key: keyof T, value: T[keyof T]) => {
+      if (session) {
+        const updatedData: T = {
+          ...session.data,
+          [key]: value,
+        } as T;
+        const updatedSession: UserSession<T> = {
+          ...session,
+          data: updatedData,
+        };
+        localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(updatedSession));
+        setSession(updatedSession);
+      }
+    },
     [session]
   );
 

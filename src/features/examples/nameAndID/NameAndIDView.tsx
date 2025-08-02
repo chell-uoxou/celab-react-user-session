@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useExperimentUserSession } from "@/hooks/useExperimentUserSession";
+import { useUserSession } from "@/hooks/useUserSession";
 
 type SessionData = {
   name: string;
@@ -15,7 +15,7 @@ const NameAndIDView = () => {
     endSession,
     getData,
     isSessionLoading,
-  } = useExperimentUserSession<SessionData>();
+  } = useUserSession<SessionData>();
   const [id, setId] = useState("");
   const [name, setName] = useState("");
   const [showConfirm, setShowConfirm] = useState(false);
