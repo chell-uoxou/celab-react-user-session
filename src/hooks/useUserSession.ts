@@ -154,6 +154,33 @@ function safeLocalStorageRemove(key: string): void {
   }
 }
 
+function safeParseLocalStorage<T>(): UserSession<T> | null {
+  const stored = safeLocalStorageGet(LOCALSTORAGE_KEY);
+  if (!stored) return null;
+
+  try {
+    const parsed = JSON.parse(stored);
+    if (isValidUserSession<T>(parsed)) {
+      // 有効期限のチェック
+      if (parsed.expiresAt > Date.now()) {
+        return parsed;
+      } else {
+        // セッションが期限切れの場合は削除
+        safeLocalStorageRemove(LOCALSTORAGE_KEY);
+        return null;
+      }
+    } else {
+      console.error("Invalid session data format in localStorage, removing.");
+      safeLocalStorageRemove(LOCALSTORAGE_KEY);
+      return null;
+    }
+  } catch (error) {
+    console.error("Failed to parse session data from localStorage:", error);
+    safeLocalStorageRemove(LOCALSTORAGE_KEY);
+    return null;
+  }
+}
+
 /**
  * ## 被験者セッションフック
  * このフックは、ブラウザのlocalStorageを使用して被験者セッションを管理します。
@@ -207,40 +234,13 @@ export const useUserSession = <
 
   // localStorageから復元
   useEffect(() => {
-    const stored = safeLocalStorageGet(LOCALSTORAGE_KEY);
-    if (stored) {
-      let parsed: unknown;
-
-      try {
-        parsed = JSON.parse(stored);
-      } catch (error) {
-        console.error("Failed to parse session data from localStorage:", error);
-        safeLocalStorageRemove(LOCALSTORAGE_KEY);
-        setIsSessionActive(false);
-        setSession(null);
-        return;
-      }
-
-      if (!isValidUserSession<T>(parsed)) {
-        console.error("Invalid session data format in localStorage, removing.");
-        safeLocalStorageRemove(LOCALSTORAGE_KEY);
-        setIsSessionActive(false);
-        setSession(null);
-        return;
-      }
-
-      const now = Date.now();
-      if (now < parsed.expiresAt) {
-        setSession(parsed);
-        setIsSessionActive(true);
-      } else {
-        safeLocalStorageRemove(LOCALSTORAGE_KEY);
-        setIsSessionActive(false);
-        setSession(null);
-      }
+    const parsedSession = safeParseLocalStorage<T>();
+    if (parsedSession) {
+      setIsSessionActive(true);
+      setSession(parsedSession);
     } else {
-      setIsSessionActive(false);
       setSession(null);
+      setIsSessionActive(false);
     }
   }, []);
 
@@ -248,14 +248,19 @@ export const useUserSession = <
   const startSession = useCallback(
     (userId: string, options?: StartOptions<T>) => {
       const { data, maxAgeSec } = options || {};
+
       const expiresAt =
         Date.now() +
-        (maxAgeSec ? maxAgeSec * 1000 : DEFAULT_SESSION_DURATION_MS);
+        (maxAgeSec !== undefined
+          ? maxAgeSec * 1000
+          : DEFAULT_SESSION_DURATION_MS);
+
       const newSession: UserSession<T> = {
         userId,
         data: data ?? ({} as T),
         expiresAt,
       };
+
       safeLocalStorageSet(LOCALSTORAGE_KEY, JSON.stringify(newSession));
       setSession(newSession);
       setIsSessionActive(true);
@@ -274,11 +279,9 @@ export const useUserSession = <
   const getData = useCallback(
     (key: keyof T): T[keyof T] | undefined => {
       if (!session) {
-        console.error("Session is not active");
         return undefined;
       }
       if (!session.data) {
-        console.error("No data available in session");
         return undefined;
       }
       return session.data[key];
