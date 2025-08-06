@@ -23,8 +23,8 @@
     /* Path mapping */
     "baseUrl": ".",
     "paths": {
-      "@/*": ["../src/*"]
+      "@/*": ["../package/*"]
     }
   },
-  "include": ["src", "../src"]
+  "include": ["src", "../package"]
 }

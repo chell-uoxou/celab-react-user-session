@@ -20,9 +20,9 @@
 
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["package/*"]
     }
   },
-  "include": ["src/**/*", "examples/src/**/*"],
+  "include": ["package/**/*", "examples/src/**/*"],
   "exclude": ["node_modules", "dist", "examples/dist"]
 }
