@@ -1,5 +1,5 @@
 import NameAndIDView from "../components/NameAndIDView";
-import { UserSessionProvider } from "@/provider";
+import { UserSessionProvider } from "@celab/react-user-session";
 
 const NameAndIdPage = () => {
   return (

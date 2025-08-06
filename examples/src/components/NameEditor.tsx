@@ -1,5 +1,5 @@
 import { SessionData } from "../types/SessionData";
-import { useUserSession } from "@/hook";
+import { useUserSession } from "@celab/react-user-session";
 
 const NameEditor = () => {
   const { getData, setData } = useUserSession<SessionData>();

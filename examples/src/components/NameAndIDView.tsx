@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useUserSession } from "@/hook";
+import { useUserSession } from "@celab/react-user-session";
 import { SessionData } from "../types/SessionData";
 import NameEditor from "./NameEditor";
 
