@@ -1,12 +1,12 @@
 "use client";
 
-import { DEFAULT_SESSION_DURATION_MS, LOCALSTORAGE_KEY } from "@/constants";
-import { StartOptions, UserSession, UserSessionContextValue } from "@/types";
+import { DEFAULT_SESSION_DURATION_MS, LOCALSTORAGE_KEY } from "./constants";
+import { StartOptions, UserSession, UserSessionContextValue } from "./types";
 import {
   getSessionFromLocalStorage,
   safeLocalStorageRemove,
   safeLocalStorageSet,
-} from "@/utils";
+} from "./utils";
 import { useState, useEffect, useCallback, PropsWithChildren } from "react";
 import { UserSessionContext } from "./context";
 
