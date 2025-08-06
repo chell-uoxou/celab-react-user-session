@@ -3,11 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "workspaces": [
-    "src",
+    "package",
     "examples"
   ],
   "scripts": {
-    "build:lib": "cd src && npm run build",
+    "build:lib": "cd package && npm run build",
     "build:examples": "cd examples && npm run build",
     "dev": "cd examples && npm run dev"
   },
