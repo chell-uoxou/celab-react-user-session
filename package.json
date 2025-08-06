@@ -1,25 +1,20 @@
 {
-  "name": "celab-auth-app",
+  "name": "celab-react-user-session-workspace",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "src",
+    "examples"
+  ],
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
-  "dependencies": {
-    "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "build:lib": "cd src && npm run build",
+    "build:examples": "cd examples && npm run build",
+    "dev": "cd examples && npm run dev"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
     "eslint": "^9",
-    "tailwindcss": "^4",
     "typescript": "^5"
   }
 }
