@@ -36,12 +36,10 @@ pnpm add @celab/react-user-session
 ## 使用例
 ```tsx
 // App.tsx
-import { useUserSession } from '@celab/react-user-session';
+import { useUserSession, UserSessionProvider } from '@celab/react-user-session';
 import ExampleComponent from './ExampleComponent';
 
 const App = () => {
-  const { UserSessionProvider } = useUserSession();
-
   return (
     // UserSessionProviderでアプリケーション全体をラップします
     <UserSessionProvider>
