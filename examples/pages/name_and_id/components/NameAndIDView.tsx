@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useUserSession } from "@/hook";
-import { SessionData } from "./types";
+import { SessionData } from "../types/SessionData";
 import NameEditor from "./NameEditor";
 
 const NameAndIDView = () => {

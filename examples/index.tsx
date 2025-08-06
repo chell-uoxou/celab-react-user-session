@@ -1,6 +1,6 @@
 "use client";
 
-import ExampleLink from "@/features/topPage/components/ExampleLink";
+import ExampleLink from "./components/ExampleLink";
 
 const LoginPage = () => {
   return (
@@ -13,11 +13,6 @@ const LoginPage = () => {
           href="/examples/name_and_id"
           title="IDに氏名を加えたセッションのデモ"
           description="任意のuserIDに加えて、string型の氏名をセッションデータに保存する例です。"
-        />
-        <ExampleLink
-          href="/examples/simple_only_id"
-          title="IDのみでログインする、ログイン画面の例"
-          description="useUserSession()を使って、IDのみでログインする例です。"
         />
       </div>
     </div>

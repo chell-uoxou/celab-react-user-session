@@ -1,5 +1,5 @@
 import React from "react";
-import { SessionData } from "./types";
+import { SessionData } from "../types/SessionData";
 import { useUserSession } from "@/hook";
 
 const NameEditor = () => {
