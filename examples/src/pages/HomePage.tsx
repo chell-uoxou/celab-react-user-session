@@ -1,6 +1,7 @@
 import { Github, Hexagon } from "lucide-react";
 import ExampleLink from "../components/ExampleLink";
 import Button from "../components/Button";
+import Command from "../components/Command";
 
 const HomePage = () => {
   return (
@@ -13,7 +14,7 @@ const HomePage = () => {
           研究実験システム向けの、被験者セッション管理を簡単に行うReact
           hookです。
         </p>
-        <div className="flex gap-2 w-full">
+        <div className="flex gap-4 w-full">
           <a
             href="https://github.com/yurayui/celab-auth-app"
             target="_blank"
@@ -36,6 +37,7 @@ const HomePage = () => {
             </Button>
           </a>
         </div>
+        <Command isCopyable>npm i @celab/react-user-session</Command>
       </div>
       <div className="flex flex-col gap-8">
         <ExampleLink
