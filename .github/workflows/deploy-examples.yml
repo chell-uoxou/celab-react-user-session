@@ -31,12 +31,22 @@ jobs:
           cache: "npm"
           cache-dependency-path: "package-lock.json"
 
-      - name: Install dependencies
+      - name: (Library) Install dependencies
+        run: |
+          cd package
+          npm ci
+
+      - name: Build library
+        run: |
+          cd package
+          npm run build
+
+      - name: (Example Page) Install dependencies
         run: |
           cd examples
           npm ci
 
-      - name: Build examples
+      - name: Build example page
         run: |
           cd examples
           npm run build
