@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "../src"),
     },
   },
-  base: mode === "production" ? "/リポジトリ名/" : "/",
+  base: mode === "production" ? "/celab-react-user-session" : "/",
   server: {
     port: 3000,
   },
