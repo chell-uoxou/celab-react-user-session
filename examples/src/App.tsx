@@ -4,7 +4,7 @@ import NameAndIdPage from "./pages/NameAndIdPage";
 
 function App() {
   return (
-    <BrowserRouter basename="/celab-react-user-session">
+    <BrowserRouter basename={process.env.PUBLIC_URL}>
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/examples/name_and_id" element={<NameAndIdPage />} />

@@ -2,6 +2,7 @@
   "name": "celab-auth-app-examples",
   "private": true,
   "version": "0.0.0",
+  "homepage": "https://chell-uoxou.github.io/celab-react-user-session/",
   "type": "module",
   "scripts": {
     "dev": "vite",

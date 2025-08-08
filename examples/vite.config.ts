@@ -10,8 +10,11 @@ export default defineConfig({
       "@": path.resolve(__dirname, "../src"),
     },
   },
-  base: "/celab-react-user-session/",
+  base: process.env.PUBLIC_URL ?? "/",
   server: {
     port: 3000,
+  },
+  define: {
+    "process.env.PUBLIC_URL": process.env.PUBLIC_URL,
   },
 });
